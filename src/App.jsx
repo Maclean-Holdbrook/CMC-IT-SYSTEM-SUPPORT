@@ -17,7 +17,7 @@ import WorkerDashboard from './pages/worker/WorkerDashboard';
 
 function App() {
   return (
-    <Router>
+    <Router basename="/complaint-system">
       <ScrollToTop />
       <AuthProvider>
         <ToastProvider>

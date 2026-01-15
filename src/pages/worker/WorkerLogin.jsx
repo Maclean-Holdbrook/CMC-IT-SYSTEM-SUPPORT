@@ -108,7 +108,7 @@ const WorkerLogin = () => {
         </form>
 
         <div className="login-footer">
-          <p><a href="/" onClick={(e) => { e.preventDefault(); window.location.href = '/'; }}>← Back to Home</a></p>
+          <p><a href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }}>← Back to Home</a></p>
         </div>
       </div>
 
