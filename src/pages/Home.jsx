@@ -1,14 +1,15 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import './Home.css';
-import cmcLogo from '../images/cmclogo.png';
-import cocoaImage1 from '../images/cocoa image 1.jpg';
-import cocoaImage2 from '../images/cocoa image 2.jpg';
+import campusBackground from '../images/campus-reporting-background.jpg';
+import adminBackground from '../images/admin-operations-background.jpg';
+import workerBackground from '../images/worker-maintenance-background.jpg';
+
+const backgroundImages = [campusBackground, adminBackground, workerBackground];
 
 const Home = () => {
   const navigate = useNavigate();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const backgroundImages = [cocoaImage1, cocoaImage2];
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,9 +35,7 @@ const Home = () => {
       </div>
 
       <div className="home-content">
-        {/* Logo */}
-        <img src={cmcLogo} alt="CMC Logo" className="cmc-logo" />
-        <h1>CMC IT SYSTEM SUPPORT</h1>
+        <h1>CAMPUS FAULT REPORTING SYSTEM</h1>
         {/* <p className="subtitle">Efficient complaint tracking and resolution</p> */}
 
         <div className="portal-cards">
@@ -63,7 +62,7 @@ const Home = () => {
         </div>
 
         <footer className="home-footer">
-          <p>© 2025 CMC IT SYSTEM SUPPORT. All rights reserved.</p>
+          <p>© 2026 Campus Fault Reporting System. All rights reserved.</p>
         </footer>
       </div>
     </div>

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/common/Toast';
+import { useAuth } from '../../context/auth';
+import { useToast } from '../../components/common/toastContext';
 import { adminAPI } from '../../api/services';
 import AdminNavigation from '../../components/AdminNavigation';
 import './AdminDashboard.css';
 import './AdminSettings.css';
 
 const AdminSettings = () => {
-  const { user, login } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const { showSuccess, showError } = useToast();
 
   const [profileData, setProfileData] = useState({
@@ -61,9 +61,9 @@ const AdminSettings = () => {
     setLoadingProfile(true);
 
     try {
-      const response = await adminAPI.updateProfile(profileData);
+      await adminAPI.updateProfile(profileData);
       // Backend returns { status: 'success', data: { admin } }
-      login(response.data.admin, 'ADMIN', localStorage.getItem('token'));
+      await refreshProfile();
       showSuccess('Profile updated successfully!');
     } catch (error) {
       showError(error.response?.data?.message || 'Failed to update profile');

@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import { adminAPI } from '../../api/services';
+import { useAuth } from '../../context/auth';
 import './Login.css';
-import cocoaImage3 from '../../images/cocoa image 3.jpg';
+import adminBackground from '../../images/admin-operations-background.jpg';
 
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
@@ -30,16 +29,13 @@ const AdminLogin = () => {
     setErrorMessage('');
 
     try {
-      const response = await adminAPI.login(email, password);
-      // Backend returns { status: 'success', data: { admin, token, role } }
-      const { admin, token, role } = response.data;
-      login(admin, role, token);
+      await login(email, password, ['ADMIN', 'SUPER_ADMIN']);
 
       // Redirect to intended page or default to dashboard
       const intendedPage = location.state?.from || '/admin/dashboard';
       navigate(intendedPage, { replace: true });
     } catch (err) {
-      setErrorMessage(err.response?.data?.message || 'Login failed. Please try again.');
+      setErrorMessage(err.message || 'Login failed. Please try again.');
       setShowErrorModal(true);
       // Show error modal - NO AUTOMATIC REDIRECT, user must click button to close
     } finally {
@@ -58,7 +54,7 @@ const AdminLogin = () => {
 
 
   return (
-    <div className="login-container admin-login" style={{ backgroundImage: `url(${cocoaImage3})` }}>
+    <div className="login-container admin-login" style={{ backgroundImage: `url(${adminBackground})` }}>
       <div className="login-card">
         <div className="login-header">
           <h1>Admin Login</h1>

@@ -1,203 +1,216 @@
-import { useState, useEffect } from 'react';
-import { staffAPI } from '../../api/services';
-import AlertModal from '../../components/common/AlertModal';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { getSupabase, isSupabaseConfigured } from '../../lib/supabase';
 import './StaffComplaintForm.css';
-import cocoaImage2 from '../../images/cocoa image 2.jpg';
+
+const MAX_FILES = 5;
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
+const FALLBACK_CATEGORIES = [
+  'Broken furniture',
+  'Building damage',
+  'Electrical fault',
+  'Water or plumbing issue',
+  'Internet or equipment issue',
+  'Safety hazard',
+];
+
+const emptyForm = {
+  categoryId: '',
+  title: '',
+  description: '',
+  location: '',
+  building: '',
+  room: '',
+  reporterName: '',
+  reporterEmail: '',
+};
 
 const StaffComplaintForm = () => {
-  const [formData, setFormData] = useState({
-    staffName: '',
-    department: '',
-    title: '',
-    description: '',
-    location: '',
-  });
-  const [images, setImages] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [form, setForm] = useState(emptyForm);
+  const [categories, setCategories] = useState([]);
+  const [files, setFiles] = useState([]);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showErrorModal, setShowErrorModal] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [receipt, setReceipt] = useState(null);
 
   useEffect(() => {
-    loadDepartments();
+    if (!isSupabaseConfigured) return;
+
+    getSupabase()
+      .from('categories')
+      .select('id, name')
+      .eq('active', true)
+      .order('name')
+      .then(({ data, error: categoryError }) => {
+        if (!categoryError) setCategories(data ?? []);
+      });
   }, []);
 
-  const loadDepartments = async () => {
-    try {
-      const response = await staffAPI.getDepartments();
-      setDepartments(response.data.departments);
-    } catch (err) {
-      console.error('Failed to load departments:', err);
-    }
+  const updateField = (event) => {
+    const { name, value } = event.target;
+    setForm((current) => ({ ...current, [name]: value }));
   };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const chooseFiles = (event) => {
+    const selected = Array.from(event.target.files ?? []);
+    setError('');
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    if (files.length > 5) {
-      setError('Maximum 5 images allowed');
+    if (selected.length > MAX_FILES) {
+      setError(`You can upload a maximum of ${MAX_FILES} files.`);
+      event.target.value = '';
       return;
     }
-    setImages(files);
+    if (selected.some((file) => file.size > MAX_FILE_SIZE)) {
+      setError('Each file must be 10 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    setFiles(selected);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const submitReport = async (event) => {
+    event.preventDefault();
+    setError('');
+
+    if (!isSupabaseConfigured) {
+      setError('The reporting service is not configured yet. Add the Supabase credentials to continue.');
+      return;
+    }
+
     setLoading(true);
-    setErrorMessage('');
-
     try {
-      const data = new FormData();
-      Object.keys(formData).forEach((key) => {
-        if (formData[key]) {
-          data.append(key, formData[key]);
-        }
-      });
-      images.forEach((image) => {
-        data.append('images', image);
-      });
+      const payload = new FormData();
+      Object.entries(form).forEach(([key, value]) => payload.append(key, value));
+      files.forEach((file) => payload.append('files', file));
 
-      await staffAPI.submitComplaint(data);
-      setShowSuccessModal(true);
-      setFormData({
-        staffName: '',
-        department: '',
-        title: '',
-        description: '',
-        location: '',
+      const { data, error: submitError } = await getSupabase().functions.invoke('submit-report', {
+        body: payload,
       });
-      setImages([]);
-    } catch (err) {
-      setErrorMessage(err.response?.data?.message || 'Failed to submit complaint');
-      setShowErrorModal(true);
+      if (submitError) throw submitError;
+
+      setReceipt(data);
+      setForm(emptyForm);
+      setFiles([]);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (submitError) {
+      setError(submitError.message || 'Your report could not be submitted. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
+  const copyReceipt = async () => {
+    await navigator.clipboard.writeText(
+      `Report reference: ${receipt.reference}\nTracking token: ${receipt.trackingToken}`,
+    );
+  };
+
+  if (receipt) {
+    return (
+      <main className="report-page">
+        <section className="report-receipt" aria-labelledby="receipt-heading">
+          <div className="receipt-check" aria-hidden="true">✓</div>
+          <p className="eyebrow">Report received</p>
+          <h1 id="receipt-heading">Thank you for helping improve your campus.</h1>
+          <p>Your report is now in the maintenance queue. Save both values below to check its progress.</p>
+
+          <div className="receipt-values">
+            <div><span>Report reference</span><strong>{receipt.reference}</strong></div>
+            <div><span>Private tracking token</span><strong className="token-value">{receipt.trackingToken}</strong></div>
+          </div>
+
+          <p className="privacy-note">Keep the tracking token private. Anyone with both values can view this report’s progress.</p>
+          <div className="receipt-actions">
+            <button type="button" className="primary-button" onClick={copyReceipt}>Copy details</button>
+            <Link className="secondary-button receipt-link" to="/track-report">Track this report</Link>
+            <button type="button" className="secondary-button" onClick={() => setReceipt(null)}>Report another issue</button>
+          </div>
+        </section>
+      </main>
+    );
+  }
+
   return (
-    <div className="staff-complaint-container" style={{ backgroundImage: `url(${cocoaImage2})` }}>
-      <div className="staff-complaint-card">
-        <h1>Submit a Complaint</h1>
-        <p className="subtitle">Fill out the form below to submit your complaint</p>
+    <main className="report-page">
+      <section className="report-intro">
+        <Link className="track-link" to="/track-report">Already submitted? Track your report →</Link>
+        <p className="eyebrow">Campus maintenance</p>
+        <h1>See damage? Let the right team know.</h1>
+        <p>No account is required. Tell us what happened, where it is, and add a photo if you can.</p>
+        <div className="report-promises">
+          <span>Usually takes 2–3 minutes</span>
+          <span>Contact details are optional</span>
+          <span>You’ll receive a tracking reference</span>
+        </div>
+      </section>
 
-        <form onSubmit={handleSubmit} className="complaint-form">
-          <div className="form-group">
-            <label htmlFor="staffName">Your Name *</label>
-            <input
-              type="text"
-              id="staffName"
-              name="staffName"
-              value={formData.staffName}
-              onChange={handleChange}
-              required
-              placeholder=""
-            />
+      <section className="report-card" aria-labelledby="form-heading">
+        <div className="form-heading">
+          <div><p className="step-label">New report</p><h2 id="form-heading">Describe the issue</h2></div>
+          <span className="required-note">* Required</span>
+        </div>
+
+        <form onSubmit={submitReport} className="report-form">
+          <div className="field">
+            <label htmlFor="categoryId">Issue category</label>
+            <select id="categoryId" name="categoryId" value={form.categoryId} onChange={updateField}>
+              <option value="">Select the closest category</option>
+              {categories.length > 0
+                ? categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)
+                : FALLBACK_CATEGORIES.map((name) => <option key={name} value="" disabled>{name}</option>)}
+            </select>
           </div>
 
-          <div className="form-row">
-            <div className="form-group">
-              <label htmlFor="department">Department *</label>
-              <select
-                id="department"
-                name="department"
-                value={formData.department}
-                onChange={handleChange}
-                required
-              >
-                <option value="">Select Department</option>
-                {departments.map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept.replace(/_/g, '-')}
-                  </option>
-                ))}
-              </select>
+          <div className="field">
+            <label htmlFor="title">Short title *</label>
+            <input id="title" name="title" value={form.title} onChange={updateField} minLength="5" maxLength="160" required placeholder="Example: Broken classroom window" />
+          </div>
+
+          <div className="field">
+            <label htmlFor="description">What is damaged or unsafe? *</label>
+            <textarea id="description" name="description" value={form.description} onChange={updateField} minLength="10" maxLength="5000" rows="5" required placeholder="Describe what you noticed and anything the maintenance team should know." />
+            <small>{form.description.length}/5000 characters</small>
+          </div>
+
+          <fieldset>
+            <legend>Where is the problem?</legend>
+            <div className="field">
+              <label htmlFor="location">Campus location *</label>
+              <input id="location" name="location" value={form.location} onChange={updateField} minLength="2" maxLength="300" required placeholder="Example: North campus, beside the library entrance" />
             </div>
+            <div className="field-row">
+              <div className="field"><label htmlFor="building">Building</label><input id="building" name="building" value={form.building} onChange={updateField} maxLength="120" placeholder="Library" /></div>
+              <div className="field"><label htmlFor="room">Room or area</label><input id="room" name="room" value={form.room} onChange={updateField} maxLength="80" placeholder="Room 204" /></div>
+            </div>
+          </fieldset>
 
-            <div className="form-group">
-              <label htmlFor="location">Location</label>
-              <input
-                type="text"
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder=""
-              />
+          <div className="field">
+            <label htmlFor="files">Photos or supporting files</label>
+            <div className="file-drop">
+              <input id="files" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" multiple onChange={chooseFiles} />
+              <strong>{files.length ? `${files.length} file${files.length === 1 ? '' : 's'} selected` : 'Choose files'}</strong>
+              <span>JPG, PNG, WebP, or PDF · up to 5 files · 10 MB each</span>
             </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="title">Complaint Title *</label>
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              placeholder=""
-            />
-          </div>
+          <fieldset>
+            <legend>Contact details <span>(optional)</span></legend>
+            <p className="fieldset-help">Add an email if you want confirmation and status notifications.</p>
+            <div className="field-row">
+              <div className="field"><label htmlFor="reporterName">Your name</label><input id="reporterName" name="reporterName" value={form.reporterName} onChange={updateField} maxLength="120" autoComplete="name" /></div>
+              <div className="field"><label htmlFor="reporterEmail">Email address</label><input id="reporterEmail" name="reporterEmail" type="email" value={form.reporterEmail} onChange={updateField} maxLength="254" autoComplete="email" placeholder="student@example.edu" /></div>
+            </div>
+          </fieldset>
 
-          <div className="form-group">
-            <label htmlFor="description">Detailed Description</label>
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              rows="3"
-              placeholder=""
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="images">Upload Images (Max 5)</label>
-            <input
-              type="file"
-              id="images"
-              accept="image/*"
-              multiple
-              onChange={handleImageChange}
-            />
-            {images.length > 0 && (
-              <small className="file-info">{images.length} file(s) selected</small>
-            )}
-          </div>
-
-          <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Submitting...' : 'Submit Complaint'}
+          {error && <div className="form-error" role="alert">{error}</div>}
+          <button type="submit" className="primary-button submit-report" disabled={loading}>
+            {loading ? 'Submitting report…' : 'Submit report'}
           </button>
+          <p className="form-footnote">By submitting, you confirm that this report is accurate to the best of your knowledge.</p>
         </form>
-      </div>
-
-      <AlertModal
-        isOpen={showSuccessModal}
-        onClose={() => setShowSuccessModal(false)}
-        title="Message Delivered"
-        message="Your complaint has been submitted successfully! You will receive updates via email."
-        type="success"
-        autoClose={true}
-        autoCloseDelay={4000}
-      />
-
-      <AlertModal
-        isOpen={showErrorModal}
-        onClose={() => setShowErrorModal(false)}
-        title="Submission Failed"
-        message={errorMessage}
-        type="error"
-        autoClose={false}
-      />
-    </div>
+      </section>
+    </main>
   );
 };
 
