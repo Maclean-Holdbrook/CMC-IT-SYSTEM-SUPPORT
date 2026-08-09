@@ -144,6 +144,11 @@
   margin-top: 1rem;
 }
 
+.setup-eyebrow { margin: 0 0 0.5rem; color: #667eea; font-size: 0.75rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.setup-state { padding: 1rem; border-radius: 8px; background: #f5f7fa; color: #59635e; text-align: center; }
+.setup-error { background: #fff4f4; color: #8c3030; }
+.setup-error a { color: #667eea; font-weight: 700; }
+
 /* Inline Error Message */
 .inline-error-message {
   background: #fee;

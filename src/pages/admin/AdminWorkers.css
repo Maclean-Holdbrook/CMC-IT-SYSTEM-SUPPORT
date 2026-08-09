@@ -87,6 +87,16 @@
   background: #c82333;
 }
 
+.restore-btn {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  background: #18704a;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

@@ -1,6 +1,6 @@
-# CMC IT System Support - Frontend
+# Campus Fault Reporting System - Frontend
 
-Modern web application for the CMC IT System Support complaint management system.
+Modern web application for reporting and resolving campus facility faults.
 
 ## Tech Stack
 

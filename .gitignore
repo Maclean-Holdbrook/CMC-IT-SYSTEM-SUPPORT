@@ -18,6 +18,9 @@ dist-ssr
 .env.development
 .env.production
 
+# Supabase CLI cache
+supabase/.temp/
+
 # Claude Code configuration
 .claude/
 

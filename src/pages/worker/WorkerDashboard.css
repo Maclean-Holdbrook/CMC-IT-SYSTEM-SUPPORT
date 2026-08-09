@@ -146,6 +146,43 @@
   border-bottom: 1px solid #e0e0e0;
 }
 
+.worker-empty {
+  padding: 3rem;
+  border: 1px dashed #cfd9d3;
+  border-radius: 12px;
+  background: white;
+  text-align: center;
+  color: #66736c;
+}
+
+.worker-updates {
+  display: grid;
+  gap: 0.7rem;
+  margin: 1rem 0;
+}
+
+.worker-updates > div {
+  padding: 0.8rem;
+  border-left: 3px solid #667eea;
+  border-radius: 4px;
+  background: #f7f8fc;
+}
+
+.worker-updates span {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: capitalize;
+}
+
+.worker-updates p {
+  margin: 0.35rem 0;
+  color: #3f4944;
+}
+
+.worker-updates small {
+  color: #7b8580;
+}
+
 /* Hamburger Menu */
 .header-actions {
   display: flex;
