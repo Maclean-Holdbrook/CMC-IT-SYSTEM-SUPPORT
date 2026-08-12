@@ -15,6 +15,7 @@ const AdminWorkers = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [workerData, setWorkerData] = useState({ email: '', fullName: '', departmentId: '' });
+  const [setupLink, setSetupLink] = useState('');
 
   const loadWorkers = useCallback(async () => {
     setLoading(true);
@@ -35,10 +36,15 @@ const AdminWorkers = () => {
     event.preventDefault();
     setSaving(true);
     try {
-      await inviteWorker(workerData);
-      showSuccess('Worker invitation sent.');
+      const result = await inviteWorker(workerData);
       setShowCreateModal(false);
       setWorkerData({ email: '', fullName: '', departmentId: '' });
+      if (result.delivery === 'manual' && result.setupLink) {
+        setSetupLink(result.setupLink);
+        showSuccess('Worker created. Copy and send the secure setup link.');
+      } else {
+        showSuccess('Worker invitation sent.');
+      }
       await loadWorkers();
     } catch (error) {
       showError(error.message || 'Failed to invite worker');
@@ -92,6 +98,15 @@ const AdminWorkers = () => {
             <div className="form-group"><label htmlFor="workerDepartment">Department</label><select id="workerDepartment" value={workerData.departmentId} onChange={(event) => setWorkerData({ ...workerData, departmentId: event.target.value })}><option value="">Not assigned</option>{departments.map((department) => <option key={department.id} value={department.id}>{department.name}</option>)}</select></div>
             <div className="modal-actions"><button type="button" onClick={() => setShowCreateModal(false)} className="cancel-btn">Cancel</button><button type="submit" className="submit-btn" disabled={saving}>{saving ? 'Sending…' : 'Send invitation'}</button></div>
           </form>
+        </div>
+      </div>}
+
+      {setupLink && <div className="modal-overlay" onClick={() => setSetupLink('')}>
+        <div className="modal-content" onClick={(event) => event.stopPropagation()}>
+          <h2>Worker setup link</h2>
+          <p className="modal-complaint-title">Email delivery is unavailable. Copy this secure one-time link and send it directly to the worker.</p>
+          <div className="form-group"><label htmlFor="workerSetupLink">Setup link</label><textarea id="workerSetupLink" value={setupLink} readOnly rows="5" /></div>
+          <div className="modal-actions"><button type="button" className="cancel-btn" onClick={() => setSetupLink('')}>Close</button><button type="button" className="submit-btn" onClick={async () => { await navigator.clipboard.writeText(setupLink); showSuccess('Setup link copied.'); }}>Copy link</button></div>
         </div>
       </div>}
 

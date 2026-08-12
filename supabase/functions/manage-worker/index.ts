@@ -49,11 +49,29 @@ Deno.serve(async (request) => {
       }
 
       const redirectTo = `${Deno.env.get('APP_URL') ?? ''}/worker/setup`;
-      const { data: invitation, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
+      let { data: invitation, error: inviteError } = await adminClient.auth.admin.inviteUserByEmail(email, {
         redirectTo,
         data: { full_name: fullName, intended_role: 'worker' },
       });
-      if (inviteError) throw inviteError;
+      let setupLink: string | null = null;
+      let delivery: 'email' | 'manual' = 'email';
+
+      if (inviteError) {
+        const { data: generated, error: linkError } = await adminClient.auth.admin.generateLink({
+          type: 'invite',
+          email,
+          options: {
+            redirectTo,
+            data: { full_name: fullName, intended_role: 'worker' },
+          },
+        });
+        if (linkError || !generated.user || !generated.properties?.action_link) {
+          throw linkError ?? inviteError;
+        }
+        invitation = { user: generated.user };
+        setupLink = generated.properties.action_link;
+        delivery = 'manual';
+      }
 
       const { error: profileError } = await adminClient.from('profiles').upsert({
         id: invitation.user.id,
@@ -64,7 +82,7 @@ Deno.serve(async (request) => {
       });
       if (profileError) throw profileError;
 
-      return json({ workerId: invitation.user.id }, 201);
+      return json({ workerId: invitation.user.id, delivery, setupLink }, 201);
     }
 
     if (action === 'set-active') {
