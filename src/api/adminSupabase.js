@@ -82,7 +82,13 @@ export async function inviteWorker({ email, fullName, departmentId }) {
   const { data, error } = await getSupabase().functions.invoke('manage-worker', {
     body: { action: 'invite', email, fullName, departmentId },
   });
-  if (error) throw error;
+  if (error) {
+    if (error.context instanceof Response) {
+      const body = await error.context.json().catch(() => null);
+      throw new Error(body?.message || error.message);
+    }
+    throw error;
+  }
   return data;
 }
 
