@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { getSupabase, isSupabaseConfigured } from '../../lib/supabase';
 import './StaffComplaintForm.css';
 
@@ -31,7 +30,7 @@ const StaffComplaintForm = () => {
   const [files, setFiles] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [receipt, setReceipt] = useState(null);
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -72,6 +71,7 @@ const StaffComplaintForm = () => {
   const submitReport = async (event) => {
     event.preventDefault();
     setError('');
+    setSubmitted(false);
 
     if (!isSupabaseConfigured) {
       setError('The reporting service is not configured yet. Add the Supabase credentials to continue.');
@@ -84,15 +84,14 @@ const StaffComplaintForm = () => {
       Object.entries(form).forEach(([key, value]) => payload.append(key, value));
       files.forEach((file) => payload.append('files', file));
 
-      const { data, error: submitError } = await getSupabase().functions.invoke('submit-report', {
+      const { error: submitError } = await getSupabase().functions.invoke('submit-report', {
         body: payload,
       });
       if (submitError) throw submitError;
 
-      setReceipt(data);
+      setSubmitted(true);
       setForm(emptyForm);
       setFiles([]);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (submitError) {
       setError(submitError.message || 'Your report could not be submitted. Please try again.');
     } finally {
@@ -100,48 +99,16 @@ const StaffComplaintForm = () => {
     }
   };
 
-  const copyReceipt = async () => {
-    await navigator.clipboard.writeText(
-      `Report reference: ${receipt.reference}\nTracking token: ${receipt.trackingToken}`,
-    );
-  };
-
-  if (receipt) {
-    return (
-      <main className="report-page">
-        <section className="report-receipt" aria-labelledby="receipt-heading">
-          <div className="receipt-check" aria-hidden="true">✓</div>
-          <p className="eyebrow">Report received</p>
-          <h1 id="receipt-heading">Thank you for helping improve your campus.</h1>
-          <p>Your report is now in the maintenance queue. Save both values below to check its progress.</p>
-
-          <div className="receipt-values">
-            <div><span>Report reference</span><strong>{receipt.reference}</strong></div>
-            <div><span>Private tracking token</span><strong className="token-value">{receipt.trackingToken}</strong></div>
-          </div>
-
-          <p className="privacy-note">Keep the tracking token private. Anyone with both values can view this report’s progress.</p>
-          <div className="receipt-actions">
-            <button type="button" className="primary-button" onClick={copyReceipt}>Copy details</button>
-            <Link className="secondary-button receipt-link" to="/track-report">Track this report</Link>
-            <button type="button" className="secondary-button" onClick={() => setReceipt(null)}>Report another issue</button>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
   return (
     <main className="report-page">
       <section className="report-intro">
-        <Link className="track-link" to="/track-report">Already submitted? Track your report →</Link>
         <p className="eyebrow">Campus maintenance</p>
         <h1>See damage? Let the right team know.</h1>
         <p>No account is required. Tell us what happened, where it is, and add a photo if you can.</p>
         <div className="report-promises">
           <span>Usually takes 2–3 minutes</span>
           <span>Contact details are optional</span>
-          <span>You’ll receive a tracking reference</span>
+          <span>Your report goes directly to the maintenance team</span>
         </div>
       </section>
 
@@ -203,6 +170,7 @@ const StaffComplaintForm = () => {
             </div>
           </fieldset>
 
+          {submitted && <div className="form-success" role="status">Your report was submitted successfully.</div>}
           {error && <div className="form-error" role="alert">{error}</div>}
           <button type="submit" className="primary-button submit-report" disabled={loading}>
             {loading ? 'Submitting report…' : 'Submit report'}

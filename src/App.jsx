@@ -6,7 +6,6 @@ import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import Home from './pages/Home';
-import TrackReport from './pages/TrackReport';
 import StaffComplaintForm from './pages/staff/StaffComplaintForm';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
@@ -27,7 +26,6 @@ function App() {
           {/* Public Routes */}
           <Route path="/" element={<Home />} />
           <Route path="/submit-complaint" element={<StaffComplaintForm />} />
-          <Route path="/track-report" element={<TrackReport />} />
 
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />

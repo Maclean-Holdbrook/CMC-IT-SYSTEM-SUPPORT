@@ -1,13 +1,12 @@
 .report-page { min-height: 100vh; padding: 64px 20px 80px; background: #f4f7f5; color: #17251e; }
-.report-intro, .report-card, .report-receipt { width: min(760px, 100%); margin-inline: auto; }
+.report-intro, .report-card { width: min(760px, 100%); margin-inline: auto; }
 .report-intro { margin-bottom: 32px; }
-.track-link { float: right; margin-top: 2px; color: #236a4b; font-size: .82rem; font-weight: 750; text-decoration: none; }
 .eyebrow, .step-label { margin: 0 0 10px; color: #19734b; font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
-.report-intro h1, .report-receipt h1 { max-width: 680px; margin: 0; color: #102d20; font-size: clamp(2.1rem, 6vw, 4rem); line-height: 1.02; letter-spacing: -.045em; }
-.report-intro > p:not(.eyebrow), .report-receipt > p { max-width: 620px; margin: 18px 0 0; color: #53635a; font-size: 1.08rem; line-height: 1.7; }
+.report-intro h1 { max-width: 680px; margin: 0; color: #102d20; font-size: clamp(2.1rem, 6vw, 4rem); line-height: 1.02; letter-spacing: -.045em; }
+.report-intro > p:not(.eyebrow) { max-width: 620px; margin: 18px 0 0; color: #53635a; font-size: 1.08rem; line-height: 1.7; }
 .report-promises { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 24px; }
 .report-promises span { padding: 8px 12px; border: 1px solid #d6e2db; border-radius: 999px; background: #fff; color: #405148; font-size: .82rem; font-weight: 650; }
-.report-card, .report-receipt { border: 1px solid #dce5df; border-radius: 24px; background: #fff; box-shadow: 0 18px 55px rgba(18, 56, 37, .08); }
+.report-card { border: 1px solid #dce5df; border-radius: 24px; background: #fff; box-shadow: 0 18px 55px rgba(18, 56, 37, .08); }
 .report-card { padding: clamp(24px, 5vw, 48px); }
 .form-heading { display: flex; align-items: start; justify-content: space-between; gap: 20px; padding-bottom: 26px; border-bottom: 1px solid #e7ede9; }
 .form-heading h2 { margin: 0; font-size: 1.65rem; letter-spacing: -.025em; }
@@ -28,21 +27,12 @@ legend span { color: #7a8980; font-weight: 500; }
 .file-drop strong { color: #19734b; }
 .file-drop span { color: #748179; font-size: .78rem; }
 .form-error { padding: 13px 15px; border: 1px solid #efb7b7; border-radius: 10px; background: #fff3f3; color: #8e2929; font-size: .9rem; }
+.form-success { padding: 13px 15px; border: 1px solid #a8d9bd; border-radius: 10px; background: #effaf3; color: #176b46; font-size: .9rem; font-weight: 700; }
 .primary-button, .secondary-button { min-height: 48px; padding: 12px 20px; border-radius: 10px; font: inherit; font-weight: 750; cursor: pointer; }
 .primary-button { border: 1px solid #176b46; background: #176b46; color: #fff; }
 .primary-button:hover:not(:disabled) { background: #105b3a; }
 .primary-button:disabled { cursor: wait; opacity: .65; }
 .secondary-button { border: 1px solid #c8d4cd; background: #fff; color: #244034; }
-.receipt-link { display: inline-flex; align-items: center; justify-content: center; box-sizing: border-box; text-decoration: none; }
 .submit-report { width: 100%; }
 .form-footnote { margin: -12px 0 0; color: #7b8981; font-size: .76rem; text-align: center; }
-.report-receipt { box-sizing: border-box; padding: clamp(28px, 7vw, 64px); text-align: left; }
-.receipt-check { display: grid; place-items: center; width: 52px; height: 52px; margin-bottom: 26px; border-radius: 50%; background: #dff5e9; color: #167047; font-size: 1.6rem; font-weight: 900; }
-.receipt-values { display: grid; gap: 12px; margin: 30px 0 18px; }
-.receipt-values div { display: grid; gap: 6px; padding: 16px; border: 1px solid #dce6e0; border-radius: 12px; background: #f8fbf9; }
-.receipt-values span { color: #68776f; font-size: .76rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
-.receipt-values strong { font-size: 1.05rem; overflow-wrap: anywhere; }
-.token-value { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
-.report-receipt .privacy-note { color: #7b6230; font-size: .86rem; }
-.receipt-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
-@media (max-width: 620px) { .report-page { padding: 36px 14px 56px; } .track-link { float: none; display: inline-block; margin: 0 0 24px; } .field-row { grid-template-columns: 1fr; } .report-card { border-radius: 18px; } fieldset { padding: 18px 14px; } .receipt-actions > * { width: 100%; } }
+@media (max-width: 620px) { .report-page { padding: 36px 14px 56px; } .field-row { grid-template-columns: 1fr; } .report-card { border-radius: 18px; } fieldset { padding: 18px 14px; } }
