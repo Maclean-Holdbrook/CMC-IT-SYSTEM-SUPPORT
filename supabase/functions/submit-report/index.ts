@@ -55,7 +55,7 @@ async function verifyTurnstile(token: string, ip: string | null) {
   return result.success === true;
 }
 
-async function sendConfirmation(email: string, reference: string, token: string) {
+async function sendConfirmation(email: string, reference: string) {
   const resendKey = Deno.env.get('RESEND_API_KEY');
   const from = Deno.env.get('REPORT_EMAIL_FROM');
   if (!resendKey || !from || !email) return;
@@ -71,7 +71,7 @@ async function sendConfirmation(email: string, reference: string, token: string)
       from,
       to: [email],
       subject: `Campus report received — ${reference}`,
-      html: `<p>Your campus damage report has been received.</p><p><strong>Reference:</strong> ${reference}</p><p><strong>Private tracking token:</strong> ${token}</p><p>Keep both values private. You will need them to check progress.</p>`,
+      html: `<p>Your campus damage report has been received and sent to the maintenance team.</p><p><strong>Reference:</strong> ${reference}</p>`,
     }),
   });
 }
@@ -154,10 +154,10 @@ Deno.serve(async (request) => {
     }
 
     if (reporterEmail) {
-      sendConfirmation(reporterEmail, reference, trackingToken).catch(console.error);
+      sendConfirmation(reporterEmail, reference).catch(console.error);
     }
 
-    return json({ reference, trackingToken }, 201);
+    return json({ message: 'Report submitted successfully.' }, 201);
   } catch (error) {
     console.error(error);
     return json({ message: 'We could not submit your report. Please try again.' }, 500);

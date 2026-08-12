@@ -14,7 +14,7 @@ Modern web application for reporting and resolving campus facility faults.
 
 ## Features
 
-- Staff complaint submission portal with image upload
+- Student complaint submission portal with image upload
 - Admin dashboard with:
   - Real-time statistics and charts
   - Complaint management
@@ -129,7 +129,7 @@ VITE_API_URL=https://your-backend-app.vercel.app/api/v1
 
 ### Public Routes
 - `/` - Home page with portal selection
-- `/staff/complaint` - Staff complaint submission form
+- `/submit-complaint` - Student complaint submission form
 
 ### Admin Routes (Protected)
 - `/admin/login` - Admin login

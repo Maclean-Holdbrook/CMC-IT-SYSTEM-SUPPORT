@@ -41,7 +41,7 @@ const Home = () => {
         <div className="portal-cards">
           <div className="portal-card staff-card" onClick={() => navigate('/submit-complaint')}>
             <div className="card-icon">📝</div>
-            <h2>Staff Portal</h2>
+            <h2>Student Portal</h2>
             <p>Submit a complaint</p>
             <p className="card-note">No login required</p>
           </div>
